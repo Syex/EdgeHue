@@ -33,6 +33,7 @@ dependencies {
     // Edge SDKs
     implementation files('libs/sdk-v1.0.0.jar')
     implementation files('libs/slook_v1.4.0.jar')
+    implementation files('libs/huecppsdk-wrapper.jar')
 
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
