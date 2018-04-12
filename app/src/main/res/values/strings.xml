@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Edge Hue</string>
+
+    <string name="edge_app_name">Edge Hue</string>
+    <string name="edge_app_description">Edge panel for Philips Hue</string>
 </resources>
