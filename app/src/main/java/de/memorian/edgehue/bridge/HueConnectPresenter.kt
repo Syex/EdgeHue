@@ -1,12 +1,7 @@
 package de.memorian.edgehue.bridge
 
-import com.philips.lighting.hue.sdk.wrapper.connection.BridgeConnection
-import com.philips.lighting.hue.sdk.wrapper.connection.BridgeConnectionCallback
-import com.philips.lighting.hue.sdk.wrapper.connection.BridgeConnectionType
-import com.philips.lighting.hue.sdk.wrapper.connection.BridgeStateUpdatedCallback
-import com.philips.lighting.hue.sdk.wrapper.connection.BridgeStateUpdatedEvent
+import com.philips.lighting.hue.sdk.wrapper.connection.*
 import com.philips.lighting.hue.sdk.wrapper.connection.BridgeStateUpdatedEvent.INITIALIZED
-import com.philips.lighting.hue.sdk.wrapper.connection.ConnectionEvent
 import com.philips.lighting.hue.sdk.wrapper.discovery.BridgeDiscovery
 import com.philips.lighting.hue.sdk.wrapper.discovery.BridgeDiscoveryCallback
 import com.philips.lighting.hue.sdk.wrapper.discovery.BridgeDiscoveryResult
@@ -18,8 +13,7 @@ import net.grandcentrix.thirtyinch.TiPresenter
 import net.grandcentrix.thirtyinch.TiView
 import timber.log.Timber
 
-class HueConnectPresenter
-    : TiPresenter<HueConnectView>() {
+class HueConnectPresenter : TiPresenter<HueConnectView>() {
 
     private val bridgeSearchCallback = BridgeSearchCallback()
 
@@ -36,11 +30,14 @@ class HueConnectPresenter
 
         sendToView {
             it.hideError()
+            it.setProgressVisible(false)
             it.setBridgeResults(results)
         }
     }
 
     fun connectToBridge(bridgeDiscoveryResult: BridgeDiscoveryResult) {
+        sendToView { it.setProgressVisible(true) }
+
         BridgeBuilder("app name", "device name")
                 .setIpAddress(bridgeDiscoveryResult.ip)
                 .setConnectionType(BridgeConnectionType.LOCAL)
@@ -59,8 +56,12 @@ class HueConnectPresenter
 
     private inner class BridgeConnectCallback : BridgeConnectionCallback() {
 
+        @Suppress("NON_EXHAUSTIVE_WHEN")
         override fun onConnectionEvent(connection: BridgeConnection, event: ConnectionEvent) {
-            Timber.i("Receives connection event: $event")
+            Timber.i("Received connection event: $event")
+            when (event) {
+                ConnectionEvent.LINK_BUTTON_NOT_PRESSED -> sendToView { it.showWaitingForLinkPush() }
+            }
         }
 
         override fun onConnectionError(connection: BridgeConnection, errors: MutableList<HueError>) {
@@ -85,7 +86,7 @@ interface HueConnectView : TiView {
 
     fun hideError()
 
-    fun setProgressVisibility(visible: Boolean)
+    fun setProgressVisible(visible: Boolean)
 
-    fun showConnectingToBridgeUi()
+    fun showWaitingForLinkPush()
 }

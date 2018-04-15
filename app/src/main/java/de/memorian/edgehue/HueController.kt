@@ -15,7 +15,6 @@ class HueController(private val context: Context) {
 
     init {
         System.loadLibrary(HUE_SDK_NAME)
-
         Persistence.setStorageLocation(context.filesDir.absolutePath, STORAGE_DIR_NAME)
         if (BuildConfig.DEBUG) HueLog.setConsoleLogLevel(HueLog.LogLevel.DEBUG)
     }

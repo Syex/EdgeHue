@@ -23,4 +23,4 @@
 -dontwarn
 
 # Keep everything from the Hue SDK
--keep class com.philips.lighting.hue.sdk.wrapper.** { *; }
+-keep class com.philips.lighting.hue.** { *; }

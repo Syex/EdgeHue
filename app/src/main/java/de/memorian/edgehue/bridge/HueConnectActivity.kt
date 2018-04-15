@@ -33,7 +33,7 @@ class HueConnectActivity : TiActivity<HueConnectPresenter, HueConnectView>(), Hu
         bridgeResults.layoutManager = LinearLayoutManager(this)
     }
 
-    override fun setProgressVisibility(visible: Boolean) {
+    override fun setProgressVisible(visible: Boolean) {
         progressBar.isVisible = visible
     }
 
@@ -53,8 +53,9 @@ class HueConnectActivity : TiActivity<HueConnectPresenter, HueConnectView>(), Hu
         bridgeError.isVisible = false
     }
 
-    override fun showConnectingToBridgeUi() {
+    override fun showWaitingForLinkPush() {
         hideError()
+        setProgressVisible(false)
         bridgeResults.isVisible = false
         bridgeLinkView.isVisible = true
     }

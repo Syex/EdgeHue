@@ -19,7 +19,7 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
     private lateinit var hueController: HueController
 
     override fun onUpdate(context: Context, cocktailManager: SlookCocktailManager, cocktailIds: IntArray) {
-        hueController = HueController(context)
+        initHueIfNecessary(context)
         val layoutID = if (hueController.hasBridgeIp) R.layout.provider_hue_single_plus else R.layout.view_no_bridge_connected
         val remoteViews = RemoteViews(context.packageName, layoutID)
         remoteViews.setOnClickPendingIntent(R.id.btn_startBridgeScan,
@@ -39,6 +39,11 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
 
     override fun onVisibilityChanged(context: Context, cocktailId: Int, visibility: Int) {
         Timber.i("Visibility of $cocktailId changed to $visibility")
+        initHueIfNecessary(context)
+    }
+
+    private fun initHueIfNecessary(context: Context) {
+        if (!this::hueController.isInitialized) hueController = HueController(context)
     }
 
     override fun onReceive(context: Context, intent: Intent) {

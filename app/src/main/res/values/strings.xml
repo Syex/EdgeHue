@@ -9,4 +9,6 @@
     <string name="bridge_ip">Bridge IP:</string>
     <string name="bridge_connect_help">Choose the Hue bridge you want to connect to</string>
     <string name="bridge_link_info">Push bridge link to connect</string>
+    <string name="no_bridge_connected">No Hue bridge connected</string>
+    <string name="connect">Connect</string>
 </resources>
