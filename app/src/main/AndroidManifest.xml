@@ -26,7 +26,7 @@
             android:name="com.samsung.android.cocktail.mode"
             android:value="edge_single_plus" />
 
-        <activity android:name=".bridge.HueConnectActivity"></activity>
+        <activity android:name=".bridge.HueConnectActivity" />
     </application>
 
 </manifest>

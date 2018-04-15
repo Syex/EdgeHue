@@ -18,7 +18,6 @@ fun Context.hueConnectActivity(): Intent {
 
 class HueConnectActivity : TiActivity<HueConnectPresenter, HueConnectView>(), HueConnectView {
 
-
     private val progressBar by lazy { findViewById<ProgressBar>(R.id.pb_scanning_for_bridges) }
     private val bridgeError by lazy { findViewById<TextView>(R.id.tv_bridge_connect_error) }
     private val bridgeResults by lazy { findViewById<RecyclerView>(R.id.rv_bridges) }
@@ -29,6 +28,13 @@ class HueConnectActivity : TiActivity<HueConnectPresenter, HueConnectView>(), Hu
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hue_connect)
+
+        setSupportActionBar(findViewById(R.id.tb_hue_connect))
+        supportActionBar?.apply {
+            title = getString(R.string.activity_hue_connect)
+            setHomeAsUpIndicator(R.drawable.ic_close)
+            setDisplayHomeAsUpEnabled(true)
+        }
 
         bridgeResults.layoutManager = LinearLayoutManager(this)
     }
