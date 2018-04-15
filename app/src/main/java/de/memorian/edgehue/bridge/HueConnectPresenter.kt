@@ -89,4 +89,6 @@ interface HueConnectView : TiView {
     fun setProgressVisible(visible: Boolean)
 
     fun showWaitingForLinkPush()
+
+    fun finish()
 }

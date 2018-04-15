@@ -9,6 +9,7 @@ import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider
 import de.memorian.edgehue.bridge.hueConnectActivity
 import timber.log.Timber
 
+const val ACTION_UPDATE_EDGE = "updateEdge"
 private const val CLICK_SCAN_BRIDGES = "scanBridges"
 
 /**
@@ -40,6 +41,11 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
     override fun onVisibilityChanged(context: Context, cocktailId: Int, visibility: Int) {
         Timber.i("Visibility of $cocktailId changed to $visibility")
         initHueIfNecessary(context)
+        val layoutID = if (hueController.hasBridgeIp) R.layout.provider_hue_single_plus else R.layout.view_no_bridge_connected
+        val remoteViews = RemoteViews(context.packageName, layoutID)
+        remoteViews.setOnClickPendingIntent(R.id.btn_startBridgeScan,
+                getPendingSelfIntent(context, CLICK_SCAN_BRIDGES))
+        SlookCocktailManager.getInstance(context).updateCocktail(cocktailId, remoteViews)
     }
 
     private fun initHueIfNecessary(context: Context) {
@@ -51,7 +57,14 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
 
         when (intent.action) {
             CLICK_SCAN_BRIDGES -> context.startActivity(context.hueConnectActivity())
+            ACTION_UPDATE_EDGE ->
         }
+    }
+
+    private fun triggerUpdate(context: Context) {
+        val cocktailManager = SlookCocktailManager.getInstance(context)
+        cocktailManager.getCocktailIds()
+        SlookCocktailManager.getInstance(context).notifyCocktailViewDataChanged()
     }
 
     private fun getPendingSelfIntent(context: Context, action: String): PendingIntent {
