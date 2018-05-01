@@ -3,12 +3,14 @@ package de.memorian.edgehue.bridge
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.philips.lighting.hue.sdk.wrapper.discovery.BridgeDiscoveryResult
+import de.memorian.edgehue.ACTION_BRIDGE_ADDED
 import de.memorian.edgehue.R
 import net.grandcentrix.thirtyinch.TiActivity
 
@@ -64,5 +66,10 @@ class HueConnectActivity : TiActivity<HueConnectPresenter, HueConnectView>(), Hu
         setProgressVisible(false)
         bridgeResults.isVisible = false
         bridgeLinkView.isVisible = true
+    }
+
+    override fun finish() {
+        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_BRIDGE_ADDED))
+        super.finish()
     }
 }

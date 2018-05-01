@@ -5,7 +5,9 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
+import android.support.v4.content.LocalBroadcastManager
 import android.widget.RemoteViews
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider
@@ -13,13 +15,13 @@ import de.memorian.edgehue.bridge.hueConnectActivity
 import timber.log.Timber
 
 
-const val ACTION_UPDATE_EDGE = "updateEdge"
+const val ACTION_BRIDGE_ADDED = "bridgeAdded"
 private const val CLICK_SCAN_BRIDGES = "scanBridges"
 
 /**
  * Implementation of a [SlookCocktailProvider] that offers actions for Philips Hue in Edge Single Plus style.
  */
-class HueSinglePlusProvider : SlookCocktailProvider() {
+class HueSinglePlusProvider : SlookCocktailProvider(), HueController.Callback {
 
     private lateinit var hueController: HueController
 
@@ -30,10 +32,12 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
 
     override fun onEnabled(context: Context) {
         Timber.i("Edge Hue Panel enabled")
+        LocalBroadcastManager.getInstance(context).registerReceiver(this, IntentFilter())
     }
 
     override fun onDisabled(context: Context) {
         Timber.i("Edge Hue Panel disabled")
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(this)
     }
 
     override fun onVisibilityChanged(context: Context, cocktailId: Int, visibility: Int) {
@@ -43,7 +47,7 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
     }
 
     private fun initHueIfNecessary(context: Context) {
-        if (!this::hueController.isInitialized) hueController = HueController(context)
+        if (!this::hueController.isInitialized) hueController = HueController(context, this)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -51,7 +55,7 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
 
         when (intent.action) {
             CLICK_SCAN_BRIDGES -> context.startActivity(context.hueConnectActivity())
-            ACTION_UPDATE_EDGE -> refreshEdgePanelViews(context)
+            ACTION_BRIDGE_ADDED -> hueController.connectToBridges()
         }
     }
 
@@ -81,6 +85,9 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
         return remoteViews
     }
 
+    /**
+     * Needed?
+     */
     private fun getUpdateIntent(context: Context, cocktailId: Int): Intent {
         val updateIntent = Intent(context, HueSinglePlusProvider::class.java)
         updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, cocktailId)
@@ -96,5 +103,9 @@ class HueSinglePlusProvider : SlookCocktailProvider() {
     private fun getPendingSelfIntent(context: Context, action: String): PendingIntent {
         val intent = Intent(context, javaClass).apply { this.action = action }
         return PendingIntent.getBroadcast(context, 0, intent, 0)
+    }
+
+    override fun bridgesUpdated(context: Context) {
+        refreshEdgePanelViews(context)
     }
 }

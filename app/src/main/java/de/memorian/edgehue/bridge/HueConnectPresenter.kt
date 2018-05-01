@@ -73,6 +73,7 @@ class HueConnectPresenter : TiPresenter<HueConnectView>() {
         override fun onBridgeStateUpdated(bridge: Bridge, event: BridgeStateUpdatedEvent) {
             if (event == INITIALIZED) {
                 Timber.i("Successfully connected to bridge $bridge")
+                sendToView { it.finish() }
             }
         }
     }
