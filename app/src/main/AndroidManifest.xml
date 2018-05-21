@@ -27,6 +27,11 @@
             android:value="edge_single_plus" />
 
         <activity android:name=".bridge.HueConnectActivity" />
+
+        <service
+            android:name=".RoomAdapterWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 
 </manifest>

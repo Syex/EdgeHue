@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/btn_startBridgeScan"
         android:layout_centerHorizontal="true"
+        android:gravity="center"
         android:text="@string/no_bridge_connected"
         android:textColor="@android:color/white" />
 

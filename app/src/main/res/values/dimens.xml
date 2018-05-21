@@ -2,4 +2,7 @@
 <resources>
     <dimen name="default_horizontal_margin">16dp</dimen>
     <dimen name="default_vertical_margin">16dp</dimen>
+
+    <dimen name="default_edge_horizontal_margin">4dp</dimen>
+    <dimen name="default_edge_vertical_margin">4dp</dimen>
 </resources>

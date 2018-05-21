@@ -10,10 +10,11 @@ import android.net.Uri
 import android.support.v4.content.LocalBroadcastManager
 import android.widget.RemoteViews
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager
+import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager.COCKTAIL_VISIBILITY_SHOW
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider
 import de.memorian.edgehue.bridge.hueConnectActivity
 import timber.log.Timber
-
+import timber.log.Timber.DebugTree
 
 const val ACTION_BRIDGE_ADDED = "bridgeAdded"
 private const val CLICK_SCAN_BRIDGES = "scanBridges"
@@ -23,14 +24,12 @@ private const val CLICK_SCAN_BRIDGES = "scanBridges"
  */
 class HueSinglePlusProvider : SlookCocktailProvider(), HueController.Callback {
 
-    private lateinit var hueController: HueController
-
     override fun onUpdate(context: Context, cocktailManager: SlookCocktailManager, cocktailIds: IntArray) {
-        initHueIfNecessary(context)
         refreshEdgePanelViews(context)
     }
 
     override fun onEnabled(context: Context) {
+        if (BuildConfig.DEBUG) Timber.plant(DebugTree())
         Timber.i("Edge Hue Panel enabled")
         LocalBroadcastManager.getInstance(context).registerReceiver(this, IntentFilter())
     }
@@ -38,24 +37,25 @@ class HueSinglePlusProvider : SlookCocktailProvider(), HueController.Callback {
     override fun onDisabled(context: Context) {
         Timber.i("Edge Hue Panel disabled")
         LocalBroadcastManager.getInstance(context).unregisterReceiver(this)
+        // stop heartbeats and disconnect from bridges
     }
 
     override fun onVisibilityChanged(context: Context, cocktailId: Int, visibility: Int) {
         Timber.i("Visibility of $cocktailId changed to $visibility")
-        initHueIfNecessary(context)
-        refreshEdgePanelViews(context)
+        if (visibility == COCKTAIL_VISIBILITY_SHOW) {
+            hueController(context).connectToBridges()
+            refreshEdgePanelViews(context)
+        }
     }
 
-    private fun initHueIfNecessary(context: Context) {
-        if (!this::hueController.isInitialized) hueController = HueController(context, this)
-    }
+    private fun hueController(context: Context): HueController = HueController.instance(context, this)
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
 
         when (intent.action) {
             CLICK_SCAN_BRIDGES -> context.startActivity(context.hueConnectActivity())
-            ACTION_BRIDGE_ADDED -> hueController.connectToBridges()
+            ACTION_BRIDGE_ADDED -> hueController(context).connectToBridges()
         }
     }
 
@@ -65,16 +65,19 @@ class HueSinglePlusProvider : SlookCocktailProvider(), HueController.Callback {
         val cocktailIds = manager.getCocktailIds(thisAppWidget)
 
         for (id in cocktailIds) {
-            val updateIntent = getUpdateIntent(context, id)
-            val edgePanel = getEdgePanelView(context, updateIntent)
+            val edgePanel = getEdgePanelView(context, id)
             manager.updateCocktail(id, edgePanel)
         }
     }
 
-    private fun getEdgePanelView(context: Context, updateIntent: Intent): RemoteViews {
+    private fun getEdgePanelView(context: Context, cocktailId: Int): RemoteViews {
         val remoteViews: RemoteViews
-        if (hueController.hasBridgeIp) {
+        if (hueController(context).hasConnectedBridge) {
             remoteViews = RemoteViews(context.packageName, R.layout.provider_hue_single_plus)
+            val intent = Intent(context, RoomAdapterWidgetService::class.java)
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, cocktailId)
+            intent.data = Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME))
+            remoteViews.setRemoteAdapter(R.id.room_list, getUpdateIntent(context, cocktailId))
         } else {
             remoteViews = RemoteViews(context.packageName, R.layout.view_no_bridge_connected).apply {
                 setOnClickPendingIntent(R.id.btn_startBridgeScan,
@@ -85,11 +88,8 @@ class HueSinglePlusProvider : SlookCocktailProvider(), HueController.Callback {
         return remoteViews
     }
 
-    /**
-     * Needed?
-     */
     private fun getUpdateIntent(context: Context, cocktailId: Int): Intent {
-        val updateIntent = Intent(context, HueSinglePlusProvider::class.java)
+        val updateIntent = Intent(context, RoomAdapterWidgetService::class.java)
         updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, cocktailId)
         updateIntent.putExtra("random", Math.random())
         // Somehow if we pass same intent every time system thinks nothing change so it didn't start the
